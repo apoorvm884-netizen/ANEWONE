@@ -107,7 +107,7 @@
       font-family: 'Segoe UI', sans-serif;
     }
     .sidebar-search input:focus {
-      box-shadow: 0 0 0 3px rgba(47,58,199,0.15);
+      box-shadow: 0 0 0 3px rgba(47, 58, 199, 0.15);
     }
 
     .sidebar-items {
@@ -487,10 +487,8 @@
   </div>
 
   <script>
-    // 100% Direct Live Google Apps Script Link
     const SHEET_URL = 'https://script.google.com/macros/s/AKfycby6pnCxmLpgGeKH-tHYTjwerOlOvLzCVqNyzD2k_rE22VxzYBa5QNY6XEyGVzSaz0bV/exec';
     
-    // 🔑 APNI GROQ KEY STRING YAHAN '"gsk_..."' ME PASTE KAREIN
     const GROQ_DIRECT_KEY = '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'; 
 
     let allData = [];
@@ -543,7 +541,7 @@
         buildSidebar();
       } catch(e) {
         document.getElementById('sidebar').innerHTML =
-          '<div style="padding:20px;color:red;font-size:13px;">❌ Error loading sheet. Apps script configure check karein.</div>';
+          '<div style="padding:20px;color:red;font-size:13px;">❌ Error loading data.</div>';
       }
     }
 
@@ -707,7 +705,7 @@
 
       let html = `
         <div class="screen-title">🤖 Volt Money AI Assistant</div>
-        <div class="screen-subtitle">Direct Engine Enabled | Llama-3 Powered</div>
+        <div class="screen-subtitle">Live Sheets Enabled | Llama-3 Powered</div>
         
         <div class="chat-container">
           <div class="chat-messages" id="chatMessages">
@@ -747,7 +745,10 @@
       box.scrollTop = box.scrollHeight;
 
       try {
-        // Direct safe execution inside frontend closure
+        if (!GROQ_DIRECT_KEY) {
+          throw new Error("API Key is missing. Please add your key at line 354.");
+        }
+
         const liveDataString = JSON.stringify(allData);
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -778,7 +779,7 @@
           loader.innerHTML = "❌ AI response construct karne me dikkat aayi. Key status check karein.";
         }
       } catch (err) {
-        document.getElementById(loaderId).innerHTML = "❌ Connection timeout ya block alert.";
+        document.getElementById(loaderId).innerHTML = "❌ " + err.message;
       } finally {
         input.disabled = false;
         btn.disabled = false;
