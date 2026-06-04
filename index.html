@@ -739,7 +739,6 @@
 
       input.disabled = true;
       btn.disabled = true;
-
       const loaderId = 'loader_' + Date.now();
       box.innerHTML += `<div class="chat-msg ai" id="${loaderId}">Thinking... 🤔</div>`;
       box.scrollTop = box.scrollHeight;
@@ -759,10 +758,10 @@
         if (response.ok && resData.answer) {
           loader.innerHTML = parseLinks(resData.answer);
         } else {
-          loader.innerHTML = "❌ Error processing request.";
+          loader.innerHTML = "❌ Response fetch karne me dikkat aayi. Kripya dobara try karein.";
         }
       } catch (err) {
-        document.getElementById(loaderId).innerHTML = "❌ Network Error.";
+        document.getElementById(loaderId).innerHTML = "❌ Network Error: Server respond nahi kar raha.";
       } finally {
         input.disabled = false;
         btn.disabled = false;
