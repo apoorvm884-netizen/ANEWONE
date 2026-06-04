@@ -117,7 +117,8 @@
   </div>
 
   <script>
-    const CENTRAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHuaApCzQuPkEFcSLle1g9bfLROR5Zt3vdSnUubM944FA2ye2dUaMU0KBeYhbmxpk2/exec';
+    // RIGHT HERE AT THE TOP OF THE SCRIPT TAG:
+    const CENTRAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkn8Okw-PV1yG7eo_5-FOIjr1uZDHRuFl0176ojkiUwKmyK6rkAkiOmGbo2oPzVGXM/exec';
     
     let allData = [];
     let currentType = null;
@@ -222,7 +223,7 @@
       const results = allData.filter(r => r.category.toLowerCase().includes(q) || r.type.toLowerCase().includes(q) || r.subType.toLowerCase().includes(q) || r.preChecks.toLowerCase().includes(q) || r.escalationPath.toLowerCase().includes(q) || r.extraDetails.toLowerCase().includes(q));
       let html = `<div class="screen-title">Search Results</div><div class="screen-subtitle">${results.length} result(s) for "${q}"</div>`;
       if (results.length === 0) { html += `<div style="background:white;padding:20px;border-radius:12px;color:#888;font-size:14px;">No results found.</div>`; } 
-      else { results.forEach(row => { html += `<div class="search-result-item" onclick="showDetail(${allData.indexOf(row)})"><div class="s-type">${row.category} › ${row.type}</div><div class="s-subtype">${row.subType}</div></div>`; }); }
+      else { results.forEach(row => { html += `<div class="search-result-item" onclick="showDetail(${results.indexOf(row)})"><div class="s-type">${row.category} › ${row.type}</div><div class="s-subtype">${row.subType}</div></div>`; }); }
       showContent(html);
     }
 
