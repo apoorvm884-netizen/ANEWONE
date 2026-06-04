@@ -1,8 +1,6 @@
-// Apne backup data.json ko import rakhein agar kabhi sheet fail ho toh
 const backupData = require('../data.json');
 
 module.exports = async function handler(req, res) {
-  // CORS Headers lagana taaki Vercel frontend se direct request bina kisi block ke aaye
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,9 +9,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 🔥 AAPKA NAYA APPS SCRIPT URL YAHA UPDATE KAR DIYA HAI
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby6pnCxmLpgGeKH-tHYTjwerOlOvLzCVqNyzD2k_rE22VxzYBa5QNY6XEyGVzSaz0bV/exec';
-  
   const PRE_LOAN_TYPES = [
     'login & mobile number registration',
     'kyc issue'
@@ -24,7 +20,6 @@ module.exports = async function handler(req, res) {
     return PRE_LOAN_TYPES.includes(type.toLowerCase().trim()) ? 'pre' : 'post';
   }
 
-  // 🛠️ INTERNAL HELPER FUNCTION: Live sheet data fetch aur clean karne ke liye
   async function getLiveCleanedData() {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'GET',
@@ -53,7 +48,6 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // 1️⃣ GET REQUEST (Aapka puraana regular system jisse left menu load hota hai)
   if (req.method === 'GET') {
     try {
       const finalData = await getLiveCleanedData();
@@ -63,17 +57,15 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // 2️⃣ POST REQUEST (🤖 Naya AI Agent Chat Logic)
   if (req.method === 'POST') {
     try {
       const { query } = req.body;
       if (!query) {
-        return res.status(400).json({ answer: "Query text missing hai boss!" });
+        return res.status(400).json({ answer: "Query missing" });
       }
 
       const liveData = await getLiveCleanedData();
       const liveDataString = JSON.stringify(liveData);
-
       const groqApiKey = process.env.GROQ_API_KEY; 
 
       const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -87,14 +79,7 @@ module.exports = async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: `You are Volt Money's Internal Support AI Assistant. Your job is to guide support agents using the live system data provided below. 
-              Always match the agent's query with the "type" or "subType" fields from the data. 
-              Provide clear Pre-checks, troubleshooting steps, and the Escalation Path if mentioned.
-              Keep your tone professional yet natural (Hinglish or professional English is preferred). 
-              If the query is completely missing from the data, politely say that you couldn't find it in the current system manual.
-              
-              LIVE SYSTEM DATA (Google Sheets):
-              ${liveDataString}`
+              content: `You are Volt Money's Internal Support AI Assistant. Your job is to guide support agents using the live system data provided below. Always match the agent's query with the "type" or "subType" fields from the data. Provide clear Pre-checks, troubleshooting steps, and the Escalation Path if mentioned. Keep your tone professional yet natural (Hinglish or professional English is preferred). If the query is completely missing from the data, politely say that you couldn't find it in the current system manual.\n\nLIVE SYSTEM DATA:\n${liveDataString}`
             },
             { role: "user", content: query }
           ],
@@ -108,11 +93,11 @@ module.exports = async function handler(req, res) {
         const aiAnswer = aiData.choices[0].message.content;
         return res.status(200).json({ answer: aiAnswer });
       } else {
-        return res.status(500).json({ answer: "Groq AI response blank mila. Key check karein." });
+        return res.status(500).json({ answer: "AI Error" });
       }
 
     } catch (error) {
-      return res.status(500).json({ answer: "AI Error: " + error.message });
+      return res.status(500).json({ answer: "Error: " + error.message });
     }
   }
 };
