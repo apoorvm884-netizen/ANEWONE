@@ -744,24 +744,44 @@
       box.scrollTop = box.scrollHeight;
 
       try {
-        const response = await fetch(BACKEND_AI_URL, {
+        // 1. Google Sheet Apps Script se live data direct frontend me fetch karein
+        const sheetResponse = await fetch(SHEET_URL);
+        const sheetData = await sheetResponse.json();
+        const liveDataString = JSON.stringify(sheetData);
+
+        // 2. Direct Groq AI API ko call karein (Yahan apni gsk_... wali key paste kar dijiye)
+        const tempGroqKey = "YOUR_GROQ_API_KEY_HERE"; 
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${tempGroqKey}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ query: text })
+          body: JSON.stringify({
+            model: "llama3-8b-8192", 
+            messages: [
+              {
+                role: "system",
+                content: `You are Volt Money's Internal Support AI Assistant. Strictly guide support agents using this live data:\n${liveDataString}`
+              },
+              { role: "user", content: text }
+            ],
+            temperature: 0.2
+          })
         });
 
         const resData = await response.json();
         const loader = document.getElementById(loaderId);
 
-        if (response.ok && resData.answer) {
-          loader.innerHTML = parseLinks(resData.answer);
+        if (response.ok && resData.choices && resData.choices[0]) {
+          loader.innerHTML = parseLinks(resData.choices[0].message.content);
         } else {
-          loader.innerHTML = "❌ Response fetch karne me dikkat aayi. Kripya dobara try karein.";
+          loader.innerHTML = "❌ AI response nikalne me dikkat aayi.";
         }
       } catch (err) {
-        document.getElementById(loaderId).innerHTML = "❌ Network Error: Server respond nahi kar raha.";
+        console.error(err);
+        document.getElementById(loaderId).innerHTML = "❌ Network Error: Connection block ho raha hai.";
       } finally {
         input.disabled = false;
         btn.disabled = false;
@@ -769,9 +789,3 @@
         box.scrollTop = box.scrollHeight;
       }
     }
-
-    fetchData();
-  </script>
-
-</body>
-</html>
