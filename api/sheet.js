@@ -1,4 +1,4 @@
-const backupData = require('../data.json');
+=const backupData = require('../data.json');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -59,9 +59,15 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { query } = req.body;
+      // Vercel me parse data fetch karne ka accurate tarika
+      let body = req.body;
+      if (typeof body === 'string') {
+        body = JSON.parse(body);
+      }
+      
+      const { query } = body;
       if (!query) {
-        return res.status(400).json({ answer: "Query missing" });
+        return res.status(400).json({ answer: "Query text missing hai boss!" });
       }
 
       const liveData = await getLiveCleanedData();
@@ -79,7 +85,7 @@ module.exports = async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: `You are Volt Money's Internal Support AI Assistant. Your job is to guide support agents using the live system data provided below. Always match the agent's query with the "type" or "subType" fields from the data. Provide clear Pre-checks, troubleshooting steps, and the Escalation Path if mentioned. Keep your tone professional yet natural (Hinglish or professional English is preferred). If the query is completely missing from the data, politely say that you couldn't find it in the current system manual.\n\nLIVE SYSTEM DATA:\n${liveDataString}`
+              content: `You are Volt Money's Internal Support AI Assistant. Your job is to guide support agents using the live system data provided below. Always match the agent's query with the type or subType fields from the data. Provide clear Pre-checks, troubleshooting steps, and the Escalation Path if mentioned. Keep your tone professional yet natural (mix of Hindi/English is preferred). If the query is completely missing from the data, politely say that you couldn't find it in the current system manual.\n\nLIVE SYSTEM DATA:\n${liveDataString}`
             },
             { role: "user", content: query }
           ],
@@ -93,11 +99,11 @@ module.exports = async function handler(req, res) {
         const aiAnswer = aiData.choices[0].message.content;
         return res.status(200).json({ answer: aiAnswer });
       } else {
-        return res.status(500).json({ answer: "AI Error" });
+        return res.status(500).json({ answer: "Groq AI response blank mila. Key check karein." });
       }
 
     } catch (error) {
-      return res.status(500).json({ answer: "Error: " + error.message });
+      return res.status(500).json({ answer: "AI Error: " + error.message });
     }
   }
 };
